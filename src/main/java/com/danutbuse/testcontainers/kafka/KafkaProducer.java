@@ -1,6 +1,5 @@
 package com.danutbuse.testcontainers.kafka;
 
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -12,19 +11,16 @@ import java.util.UUID;
 public class KafkaProducer {
 
   @Autowired
-  KafkaTemplate<String, KafkaTestModel> kafkaTemplate;
+  KafkaTemplate<String, Pet> kafkaTemplate;
 
   @Value("${spring.kafka.topic.name}")
   String topic;
 
-  public void produce(String message) {
+  public void produce(Pet pet) {
     kafkaTemplate.send(
-        new ProducerRecord<>(
-            topic,
-            UUID.randomUUID().toString(),
-            new KafkaTestModel(UUID.randomUUID().toString(), message)
-        )
+        topic,
+        UUID.randomUUID().toString(),
+        pet
     );
-    kafkaTemplate.flush();
   }
 }

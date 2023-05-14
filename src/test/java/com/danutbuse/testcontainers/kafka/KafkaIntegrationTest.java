@@ -1,12 +1,17 @@
 package com.danutbuse.testcontainers.kafka;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.apache.avro.AvroMissingFieldException;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -22,7 +27,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import java.io.IOException;
 import java.util.Map;
 
 @Testcontainers
@@ -35,7 +39,7 @@ import java.util.Map;
     KafkaProducerConfiguration.class
 })
 @TestPropertySource(
-    properties = "spring.kafka.topic.name=mytopic"
+    properties = "spring.kafka.topic.name=pets"
 )
 class KafkaIntegrationTest {
 
@@ -78,31 +82,41 @@ class KafkaIntegrationTest {
         () -> "http://" + schemaRegistryContainer.getHost() + ":" + schemaRegistryContainer.getFirstMappedPort());
   }
 
-  @BeforeAll
-  static void createTopic() throws IOException, InterruptedException {
-    kafkaContainer.execInContainer(
-      "kafka-topics --create"
-        + " --zookeeper localhost:2181"
-        + " --replication-factor 1 --partitions 1"
-        + " --topic mytopic"
-    );
-  }
-
   @Autowired
-  private KafkaProducer kafkaProducer;
+  KafkaProducer kafkaProducer;
 
   @SpyBean
-  private KafkaConsumer kafkaConsumer;
+  KafkaConsumer kafkaConsumer;
+
+  @Captor
+  ArgumentCaptor<ConsumerRecord<String, Pet>> consumerRecordCaptor;
 
   @Test
   void testProduceAndConsumeKafkaMessage() {
-    kafkaProducer.produce("TEST");
-    verify(kafkaConsumer, timeout(15000)).consume(any());
+    // Given
+    Pet pet = Pet.newBuilder()
+        .setName("Mac")
+        .setPetType("Dog")
+        .setGender(Gender.MALE)
+        .setAge(10)
+        .build();
+
+    // When
+    kafkaProducer.produce(pet);
+
+    // Then
+    verify(kafkaConsumer, timeout(15000)).consume(consumerRecordCaptor.capture());
+    assertThat(consumerRecordCaptor.getValue().value()).isEqualTo(pet);
   }
 
   @Test
   void testProduceInvalidKafkaMessage() {
-    kafkaProducer.produce("asdfasfsafsafasfas");
+    assertThatThrownBy(() -> kafkaProducer.produce(
+        Pet.newBuilder()
+            .setAge(10)
+            .build()
+    ))
+        .isInstanceOf(AvroMissingFieldException.class);
     verify(kafkaConsumer, timeout(15000).times(0)).consume(any());
   }
 }

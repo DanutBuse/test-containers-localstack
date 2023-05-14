@@ -1,0 +1,11 @@
+{
+     "type": "record",
+     "namespace": "com.danutbuse.testcontainers.kafka",
+     "name": "Pet",
+     "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "age", "type": "int" },
+        { "name": "gender", "type": { "name": "Gender", "type": "enum", "symbols": [ "MALE", "FEMALE" ] } },
+        { "name": "petType", "type": "string", "minLength" : 3, "maxLength" : 20 }
+     ]
+}

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 public class KafkaConsumer {
 
   @KafkaHandler(isDefault = true)
-  public void consume(ConsumerRecord<String, KafkaTestModel> consumerRecord) {
+  public void consume(ConsumerRecord<String, Pet> consumerRecord) {
     System.out.println("Received message: " + consumerRecord.value());
   }
 }

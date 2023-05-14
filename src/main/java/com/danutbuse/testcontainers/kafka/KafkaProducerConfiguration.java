@@ -22,7 +22,7 @@ import io.confluent.kafka.serializers.KafkaAvroSerializer;
 public class KafkaProducerConfiguration {
 
   @Bean
-  public ProducerFactory<String, KafkaTestModel> producerFactory(KafkaProperties kafkaProperties) {
+  public ProducerFactory<String, Pet> producerFactory(KafkaProperties kafkaProperties) {
     Map<String, Object> configProps = new HashMap<>();
     configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
     configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -33,7 +33,7 @@ public class KafkaProducerConfiguration {
 
   @Bean
   @Primary
-  public KafkaTemplate<String, KafkaTestModel> kafkaTemplate(KafkaProperties kafkaProperties) {
+  public KafkaTemplate<String, Pet> kafkaTemplate(KafkaProperties kafkaProperties) {
     return new KafkaTemplate<>(producerFactory(kafkaProperties));
   }
 }

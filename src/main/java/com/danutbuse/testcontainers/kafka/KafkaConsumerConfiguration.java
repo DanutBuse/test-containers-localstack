@@ -27,7 +27,7 @@ public class KafkaConsumerConfiguration {
 
   @Bean
   @Primary
-  public ConsumerFactory<String, KafkaTestModel> consumerFactory(KafkaProperties kafkaProperties) {
+  public ConsumerFactory<String, Pet> consumerFactory(KafkaProperties kafkaProperties) {
     Map<String, Object> props = new HashMap<>();
     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
     props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
@@ -44,11 +44,10 @@ public class KafkaConsumerConfiguration {
 
   @Bean
   @Primary
-  public ConcurrentKafkaListenerContainerFactory<String, KafkaTestModel> kafkaListenerContainerFactory(
-      ConsumerFactory<String, KafkaTestModel> consumerFactory
+  public ConcurrentKafkaListenerContainerFactory<String, Pet> kafkaListenerContainerFactory(
+      ConsumerFactory<String, Pet> consumerFactory
   ) {
-    ConcurrentKafkaListenerContainerFactory<String, KafkaTestModel> factory =
-        new ConcurrentKafkaListenerContainerFactory<>();
+    ConcurrentKafkaListenerContainerFactory<String, Pet> factory = new ConcurrentKafkaListenerContainerFactory<>();
     factory.setConsumerFactory(consumerFactory);
     return factory;
   }
